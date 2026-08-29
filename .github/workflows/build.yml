@@ -1,0 +1,37 @@
+name: Build iOS Dylib
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Setup Theos
+      run: |
+        git clone --depth=1 https://github.com/theos/theos.git $HOME/theos
+
+    - name: Setup iOS SDK
+      run: |
+        mkdir -p $HOME/theos/sdks
+        git clone --depth=1 https://github.com/theos/sdks.git temp_sdks
+        mv temp_sdks/*.sdk $HOME/theos/sdks/
+        rm -rf temp_sdks
+
+    - name: Compile Dylib
+      run: |
+        export THEOS=$HOME/theos
+        make package
+
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: compiled-dylib
+        path: packages/*.deb
