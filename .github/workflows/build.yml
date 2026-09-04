@@ -1,0 +1,28 @@
+name: Build iOS Dylib
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Theos
+        uses: Randomblock1/theos-action@v1
+
+      - name: Compile Dylib
+        run: |
+          # Biên dịch trực tiếp file main.mm thành dylib bằng clang trên môi trường macOS của GitHub Actions
+          xcrun --sdk iphoneos clang++ -arch arm64 -arch arm64e -dynamiclib -undefined dynamic_lookup \
+          -framework Foundation -framework UIKit -framework CoreGraphics -framework Security \
+          main.mm -o mycheat.dylib
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-dylib
+          path: mycheat.dylib
